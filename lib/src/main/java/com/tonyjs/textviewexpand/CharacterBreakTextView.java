@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
 
 /**
@@ -25,9 +26,9 @@ public class CharacterBreakTextView extends TextView {
         super(context, attrs, defStyleAttr);
     }
 
-    private String mText;
-    public void setBrokenText(String text) {
-        mText = text;
+    private String mOriginText;
+    public void setOriginText(String text) {
+        mOriginText = text;
         breakText();
     }
 
@@ -37,12 +38,6 @@ public class CharacterBreakTextView extends TextView {
         breakText();
     }
 
-    private String mTitle;
-
-    public void setTitle(String title) {
-        mTitle = title;
-    }
-
     private void breakText() {
         int width = getWidth();
         boolean wrapContent = false;
@@ -50,33 +45,28 @@ public class CharacterBreakTextView extends TextView {
             wrapContent = getLayoutParams().width == ViewGroup.LayoutParams.WRAP_CONTENT;
         }
 
-        if (wrapContent) {
-            setText(mText);
+        if (wrapContent || width == 0) {
+            setText(mOriginText);
             return;
         }
 
-        if (width == 0) {
-            setText(mText);
-            return;
-        }
-
-        if (TextUtils.isEmpty(mText)) {
-            mText = "";
-            setText(mText);
+        if (TextUtils.isEmpty(mOriginText)) {
+            mOriginText = "";
+            setText(mOriginText);
             return;
         }
 
         Paint paint = getPaint();
-        int textLength = mText.length();
+        int textLength = mOriginText.length();
         width = width - getPaddingLeft() - getPaddingRight();
-        int breakPosition = paint.breakText(mText, true, width, null);
+        int breakPosition = paint.breakText(mOriginText, true, width, null);
         if (breakPosition >= textLength) {
-            setText(mText);
+            setText(mOriginText);
             return;
         }
 
         StringBuilder sb = new StringBuilder();
-        String[] newLineSection = mText.split("\n");
+        String[] newLineSection = mOriginText.split("\n");
         if (newLineSection.length > 1) {
             int i = 0, max = newLineSection.length - 1;
 
@@ -91,12 +81,12 @@ public class CharacterBreakTextView extends TextView {
                 }
                 i++;
             }
-            mText = sb.toString();
+            mOriginText = sb.toString();
         } else {
-            append(width, paint, mText, sb);
-            mText = sb.toString();
+            append(width, paint, mOriginText, sb);
+            mOriginText = sb.toString();
         }
-        setText(mText);
+        setText(mOriginText);
     }
 
     private void append(int width, Paint paint, String source, StringBuilder sb){
